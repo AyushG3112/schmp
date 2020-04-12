@@ -36,6 +36,7 @@ $ go get -u github.com/AyushG3112/schmp
 
 ### TODO:
 
+ - Handle diff of nested objects
  - Format CLI output
  - Add tests
  - Add Documentation
