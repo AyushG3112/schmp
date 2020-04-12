@@ -18,7 +18,10 @@ func (p *jsonParser) Parse(options options.ProcessingOptions) ([]map[string]inte
 			return nil, fmt.Errorf("failed to read source at index %d: %s", i, err.Error())
 		}
 		results[i] = make(map[string]interface{})
-		json.Unmarshal(b, &results[i])
+		err = json.Unmarshal(b, &results[i])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse json data: %s", err.Error())
+		}
 	}
 	return results, nil
 }

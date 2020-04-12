@@ -12,6 +12,22 @@ It is available as both a CLI, or a library which can be imported in your projec
 $ go install github.com/AyushG3112/schmp/cmd/schmp
 ```
 
+
+### Usage
+
+```
+Usage of schmp:
+  -f, --file stringArray   Files to compare. Use this flag multiple times, once for each file.
+  -m, --mode string        file format (default "json")
+  -o, --out-type string    Output format (default "stdout")
+```
+
+Example:
+
+``` console
+$ schmp -f path/to/first/file -f path/to/second/file --out-type stdout --mode json
+```
+
 ## Installing as a library
 
 ``` console
@@ -25,3 +41,5 @@ $ go get -u github.com/AyushG3112/schmp
  - Add Documentation
  - Bug fixes
  - Add examples
+ - Allow writing of cli output to file
+ 
