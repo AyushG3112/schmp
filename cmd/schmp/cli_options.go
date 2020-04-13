@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/AyushG3112/schmp/options"
+	"github.com/AyushG3112/schmp"
 )
 
 type cliOptions struct {
@@ -27,9 +27,9 @@ func (c *cliOptions) validate() []string {
 	return valErrors
 }
 
-func (c *cliOptions) toProcessingOptions() (options.ProcessingOptions, error) {
+func (c *cliOptions) toProcessingOptions() (schmp.ProcessingOptions, error) {
 	var err error
-	options := options.ProcessingOptions{
+	options := schmp.ProcessingOptions{
 		Mode: c.mode,
 	}
 
