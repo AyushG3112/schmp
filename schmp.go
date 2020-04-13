@@ -7,11 +7,11 @@ import (
 )
 
 func Compare(options options.ProcessingOptions) (map[string][]string, error) {
-	p, err := parser.Get(options.Mode)
+	parse, err := parser.Get(options.Mode)
 	if err != nil {
 		return nil, err
 	}
-	sm, err := p.Parse(options)
+	sm, err := parse(options)
 	if err != nil {
 		return nil, err
 	}

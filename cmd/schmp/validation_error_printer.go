@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
-func printValidationErrorsAndExit(valErrors []string) {
+func printValidationErrors(valErrors []string) {
 	if len(valErrors) == 0 {
 		return
 	}
@@ -13,6 +12,5 @@ func printValidationErrorsAndExit(valErrors []string) {
 	for _, v := range valErrors {
 		fmt.Printf(" - %s\n", v)
 	}
-	os.Exit(1)
 	return
 }
