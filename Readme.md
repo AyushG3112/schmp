@@ -35,10 +35,9 @@ $ go get -u github.com/AyushG3112/schmp
 ### TODO:
 
  - ~~Handle diff of nested objects~~
- - Format CLI output
+ - ~~Format CLI output~~
+ - ~~Allow writing of cli output to file~~
  - Add tests
  - Add Documentation
- - Bug fixes
  - Add examples
- - Allow writing of cli output to file
  
