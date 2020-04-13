@@ -11,6 +11,7 @@ import (
 type cliOptions struct {
 	mode    string
 	outType string
+	outFile string
 	inFiles []string
 }
 
@@ -22,6 +23,8 @@ func (c *cliOptions) validate() []string {
 	valErrors := make([]string, 0)
 	if !isOutTypeAllowed(c.outType) {
 		valErrors = append(valErrors, fmt.Sprintf(`out-type "%s" is not allowed`, c.outType))
+	} else if c.outType != "stdout" && c.outFile == "" {
+		valErrors = append(valErrors, fmt.Sprintf("`out-file` is required if `out-type` is not stdout"))
 	}
 
 	return valErrors

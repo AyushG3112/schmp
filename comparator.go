@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+func getTypeString(v interface{}) string {
+	if v == nil {
+		return "nil"
+	}
+	return reflect.TypeOf(v).String()
+
+}
+
 func compare(maps []map[string]interface{}, options ProcessingOptions, parent string, typeMap map[string][]string) (map[string][]string, error) {
 	seenKeys := make(map[string]bool)
 	nmaps := len(maps)
@@ -23,7 +31,7 @@ func compare(maps []map[string]interface{}, options ProcessingOptions, parent st
 			}
 			areAllSameTypes := true
 			seenKeys[k] = true
-			originalType := reflect.TypeOf(v).String()
+			originalType := getTypeString(v)
 			isObject := strings.HasPrefix(originalType, "map[string]")
 			if isObject {
 				if nm, ok := v.(map[string]interface{}); ok {
@@ -45,7 +53,7 @@ func compare(maps []map[string]interface{}, options ProcessingOptions, parent st
 					continue
 				}
 				if v2, ok := m2[k]; ok {
-					currentType = reflect.TypeOf(v2).String()
+					currentType = getTypeString(v2)
 					areAllSameTypes = areAllSameTypes && currentType == originalType
 					if isObject {
 						if nm2, ok := v2.(map[string]interface{}); ok {
@@ -70,6 +78,5 @@ func compare(maps []map[string]interface{}, options ProcessingOptions, parent st
 			}
 		}
 	}
-
 	return typeMap, nil
 }
