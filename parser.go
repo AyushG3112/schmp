@@ -9,9 +9,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Parser func(options ProcessingOptions) ([]map[string]interface{}, error)
+type parser func(options ProcessingOptions) ([]map[string]interface{}, error)
 
-func getParser(mode string) (Parser, error) {
+func getParser(mode string) (parser, error) {
 	switch mode {
 	case "json":
 		return parseJSON, nil
