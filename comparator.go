@@ -1,13 +1,11 @@
-package comparator
+package schmp
 
 import (
 	"reflect"
 	"strings"
-
-	"github.com/AyushG3112/schmp/options"
 )
 
-func compare(maps []map[string]interface{}, options options.ProcessingOptions, parent string, typeMap map[string][]string) (map[string][]string, error) {
+func compare(maps []map[string]interface{}, options ProcessingOptions, parent string, typeMap map[string][]string) (map[string][]string, error) {
 	seenKeys := make(map[string]bool)
 	nmaps := len(maps)
 	for i, m := range maps {
