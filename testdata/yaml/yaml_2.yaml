@@ -1,0 +1,20 @@
+quiz:
+  science:
+    question: null
+  sport:
+    q1:
+      question: Which one is correct team name in NBA?
+      answer: Huston Rocket
+  maths:
+    q1:
+      question: 5 + 7 = ?
+      options:
+        - '10'
+        - '11'
+        - '12'
+        - '13'
+      answer: '12'
+    q2:
+      question: 12 - 8 = ?
+      options: {}
+      answer: '4'

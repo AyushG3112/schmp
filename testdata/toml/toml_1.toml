@@ -1,0 +1,36 @@
+[quiz]
+
+  [quiz.arts]
+
+  [quiz.sport]
+
+    [quiz.sport.q1]
+    question = "Which one is correct team name in NBA?"
+    options = [
+      "New York Bulls",
+      "Los Angeles Kings",
+      "Golden State Warriros",
+      "Huston Rocket"
+    ]
+
+  [quiz.maths]
+
+    [quiz.maths.q1]
+    question = "5 + 7 = ?"
+    options = [
+      "10",
+      "11",
+      "12",
+      "13"
+    ]
+    answer = "12"
+
+    [quiz.maths.q2]
+    question = 100.0
+    options = [
+      "1",
+      "2",
+      "3",
+      "4"
+    ]
+    answer = "4"

@@ -1,6 +1,7 @@
 package schmp
 
 import (
+	"errors"
 	"reflect"
 	"strings"
 )
@@ -32,12 +33,12 @@ func compare(maps []map[string]interface{}, options ProcessingOptions, parent st
 			areAllSameTypes := true
 			seenKeys[k] = true
 			originalType := getTypeString(v)
-			isObject := strings.HasPrefix(originalType, "map[string]")
+			isObject := strings.HasPrefix(originalType, "map[")
 			if isObject {
 				if nm, ok := v.(map[string]interface{}); ok {
 					nestedMapList[i] = nm
 				} else {
-					isObject = false
+					return nil, errors.New("unsupported type encountered during comparison")
 				}
 			}
 			typeList := make([]string, nmaps)
@@ -50,9 +51,9 @@ func compare(maps []map[string]interface{}, options ProcessingOptions, parent st
 
 				if m2 == nil {
 					typeList[i2] = currentType
+					areAllSameTypes = areAllSameTypes && currentType == originalType
 					continue
-				}
-				if v2, ok := m2[k]; ok {
+				} else if v2, ok := m2[k]; ok {
 					currentType = getTypeString(v2)
 					areAllSameTypes = areAllSameTypes && currentType == originalType
 					if isObject {
