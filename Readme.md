@@ -38,6 +38,6 @@ $ go get -u github.com/AyushG3112/schmp
  - ~~Format CLI output~~
  - ~~Allow writing of cli output to file~~
  - Add tests
- - Add Documentation
+ - ~~Add Documentation~~~
  - Add examples
  
