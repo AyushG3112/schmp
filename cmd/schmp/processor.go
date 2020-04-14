@@ -6,10 +6,10 @@ import (
 	"github.com/AyushG3112/schmp"
 )
 
-func process(options cliOptions) (map[string][]string, error) {
+func process(options cliOptions) (schmp.ComparisonOutput, error) {
 	processingOptions, err := options.toProcessingOptions()
 	if err != nil {
-		return nil, err
+		return schmp.ComparisonOutput{}, err
 	}
 	defer closeFileHandles(processingOptions.Sources)
 	return schmp.Compare(processingOptions)

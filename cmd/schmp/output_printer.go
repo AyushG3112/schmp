@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"sort"
 	"strings"
+
+	"github.com/AyushG3112/schmp"
 )
 
 type typeData struct {
@@ -63,7 +65,8 @@ func toOutputFormat(m map[string][]string, options cliOptions) []outputFormat {
 	return op
 }
 
-func printDiffOutput(m map[string][]string, options cliOptions) error {
+func printDiffOutput(result schmp.ComparisonOutput, options cliOptions) error {
+	m := result.Diff
 	if len(m) == 0 {
 		fmt.Println("No Diff, all files are exactly the same!")
 		return nil

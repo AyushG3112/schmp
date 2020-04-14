@@ -6,23 +6,30 @@ import (
 )
 
 func main() {
+	if exitCode := start(); exitCode != 0 {
+		os.Exit(exitCode)
+	}
+}
+
+func start() int {
 	options := parseCLIFlags()
 	validationErrors := options.validate()
 	printValidationErrors(validationErrors)
 	if len(validationErrors) != 0 {
-		os.Exit(3)
+		return 3
 	}
 	m, err := process(options)
 	if err != nil {
 		fmt.Printf("could not process: %s\n", err.Error())
-		os.Exit(4)
+		return 4
 	}
 	err = printDiffOutput(m, options)
 	if err != nil {
 		fmt.Printf("failed to print output: %s\n", err.Error())
-		os.Exit(5)
+		return 5
 	}
-	if len(m) != 0 {
-		os.Exit(6)
+	if len(m.Diff) != 0 {
+		return 6
 	}
+	return 0
 }
