@@ -12,5 +12,5 @@ func Compare(options ProcessingOptions) (ComparisonOutput, error) {
 		return ComparisonOutput{}, err
 	}
 	diff, err := compare(sm, options, "", make(map[string][]string))
-	return ComparisonOutput{Diff: diff}, nil
+	return ComparisonOutput{Diff: diff}, err
 }

@@ -1,19 +1,11 @@
 package schmp
 
 import (
-	"errors"
 	"io"
 	"os"
 	"reflect"
 	"testing"
 )
-
-type MockErrorReader struct {
-}
-
-func (m MockErrorReader) Read(p []byte) (n int, err error) {
-	return 0, errors.New("failed to read")
-}
 
 func TestGetParser(t *testing.T) {
 	t.Run("get json parser", func(t *testing.T) {
