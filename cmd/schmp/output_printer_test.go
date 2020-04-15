@@ -434,3 +434,23 @@ func TestPrintDiffOutputNoDiff(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestPrintDiffOutputReturnsErrorOnInvalidOutType(t *testing.T) {
+	comparisonResult := schmp.ComparisonOutput{
+		Diff: map[string][]string{},
+	}
+
+	m := &mockWriter{}
+	err := printDiffOutput(comparisonResult, cliOptions{
+		outType: "random",
+	}, m)
+	if err == nil {
+		t.Fatal(("err is nil"))
+	}
+	expected := "outType 'random' not supported"
+	if expected != err.Error() {
+		t.Log(expected)
+		t.Log(err.Error())
+		t.FailNow()
+	}
+}
