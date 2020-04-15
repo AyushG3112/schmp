@@ -195,6 +195,34 @@ func TestOutputFormatWriteStdout(t *testing.T) {
 	}
 }
 
+func TestOutputFormatWriteStdoutFailed(t *testing.T) {
+	opFormat := outputFormat{
+		Field: "test",
+		Types: []typeData{
+			{
+				File: "a.json",
+				Type: "string",
+			},
+			{
+				File: "b.json",
+				Type: "integer",
+			},
+		},
+	}
+
+	m := &mockWriterError{msg: "TestOutputFormatWriteStdoutFailed"}
+	err := opFormat.printStdout(m)
+	if err == nil {
+		t.Fatal("err is nil")
+	}
+	expected := "mock error: TestOutputFormatWriteStdoutFailed"
+	if expected != err.Error() {
+		t.Log(expected)
+		t.Log(err.Error())
+		t.FailNow()
+	}
+}
+
 func TestOutputListWriteStdoutNoDiff(t *testing.T) {
 	opList := outputList{outputs: []outputFormat{}}
 
@@ -207,6 +235,22 @@ func TestOutputListWriteStdoutNoDiff(t *testing.T) {
 	if expected != m.data {
 		t.Log(expected)
 		t.Log(m.data)
+		t.FailNow()
+	}
+}
+
+func TestOutputListWriteStdoutFailed(t *testing.T) {
+	opList := outputList{outputs: []outputFormat{}}
+
+	m := &mockWriterError{msg: "TestOutputListWriteStdoutFailed"}
+	err := opList.printStdout(m)
+	if err == nil {
+		t.Fatal("err is nil")
+	}
+	expected := "mock error: TestOutputListWriteStdoutFailed"
+	if expected != err.Error() {
+		t.Log(expected)
+		t.Log(err.Error())
 		t.FailNow()
 	}
 }
