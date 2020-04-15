@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 type mockWriter struct {
