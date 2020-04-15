@@ -62,6 +62,7 @@ func TestCompareJSON(t *testing.T) {
 		},
 	}
 	if !reflect.DeepEqual(expected, result.Diff) {
+		t.Fatal(result.Diff)
 		t.Fatalf("expected and actual did not match")
 	}
 }

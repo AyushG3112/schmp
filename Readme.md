@@ -10,6 +10,15 @@ This only compares the types of your data members, and ignores the values.
 
 For objects or dictionaries, it traverses nested objects, as long as the type of that specific key is same in all the data samples provided.
 
+
+# Why? 
+
+Most projects use config files which store configuration settings which are different for different environments.
+As new features are added, need for more global configuration settings arise, which then need to be updated across all environments on release.
+
+The motivation to develop `schmp` arose as a requirement in our release process, to autoverify whether our config structure matches, in schema, not values, to our development or example config file.
+
+
 ## Installing as CLI
 
 ``` console

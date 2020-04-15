@@ -2,15 +2,19 @@ package main
 
 import (
 	"fmt"
+	"io"
 )
 
-func printValidationErrors(valErrors []string) {
+func printValidationErrors(valErrors []string, stdout io.Writer) error {
 	if len(valErrors) == 0 {
-		return
+		return nil
 	}
-	fmt.Println("Could not process due to following errors: ")
+	fmt.Fprintln(stdout, "Could not process due to following errors: ")
 	for _, v := range valErrors {
-		fmt.Printf(" - %s\n", v)
+		_, err := fmt.Fprintf(stdout, " - %s\n", v)
+		if err != nil {
+			return err
+		}
 	}
-	return
+	return nil
 }

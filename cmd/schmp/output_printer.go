@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -20,11 +21,80 @@ type outputFormat struct {
 	Types []typeData
 }
 
-func (o *outputFormat) printStdout() {
-	fmt.Printf("%s:\n", o.Field)
-	for _, v := range o.Types {
-		fmt.Printf("\t%s: %s\n", v.File, v.Type)
+func (o *outputFormat) printStdout(stdout io.Writer) error {
+	_, err := fmt.Fprintf(stdout, "%s:\n", o.Field)
+	if err != nil {
+		return err
 	}
+	for _, v := range o.Types {
+		_, err = fmt.Fprintf(stdout, "\t%s: %s\n", v.File, v.Type)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type outputList struct {
+	outputs []outputFormat
+}
+
+func (o *outputList) printStdout(stdout io.Writer) error {
+	if len(o.outputs) == 0 {
+		_, err := fmt.Fprintln(stdout, "No Diff, all files are exactly the same!")
+		return err
+	}
+	_, err := fmt.Fprintf(stdout, "%d differences found:\n\n", len(o.outputs))
+	if err != nil {
+		return err
+	}
+	for i, v := range o.outputs {
+		err = v.printStdout(stdout)
+		if err != nil {
+			return err
+		}
+		if i != len(o.outputs)-1 {
+			_, err = fmt.Fprint(stdout, "\n")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (o *outputList) writeJSON(stdout io.Writer, outFile string) error {
+	if len(o.outputs) == 0 {
+		_, err := fmt.Fprintln(stdout, "No Diff, all files are exactly the same!")
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	bytes, err := json.MarshalIndent(o.outputs, "", "  ")
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(outFile, bytes, 0644)
+}
+
+func (o *outputList) fromComparisonDiff(diff map[string][]string, options cliOptions) {
+	op := make([]outputFormat, len(diff))
+	i := 0
+	for k, v := range diff {
+		op[i].Field = k
+		op[i].Types = make([]typeData, len(v))
+		for idx, t := range v {
+			op[i].Types[idx].File = options.inFiles[idx]
+			op[i].Types[idx].Type = getOutputType(t)
+		}
+		i++
+	}
+
+	sort.Slice(op, func(i, j int) bool {
+		return op[i].Field < op[j].Field
+	})
+	o.outputs = op
 }
 
 func getOutputType(t string) string {
@@ -46,49 +116,16 @@ func getOutputType(t string) string {
 	return t
 }
 
-func toOutputFormat(m map[string][]string, options cliOptions) []outputFormat {
-	op := make([]outputFormat, len(m))
-	i := 0
-	for k, v := range m {
-		op[i].Field = k
-		op[i].Types = make([]typeData, len(v))
-		for idx, t := range v {
-			op[i].Types[idx].File = options.inFiles[idx]
-			op[i].Types[idx].Type = getOutputType(t)
-		}
-		i++
-	}
-
-	sort.Slice(op, func(i, j int) bool {
-		return op[i].Field < op[j].Field
-	})
-	return op
-}
-
-func printDiffOutput(result schmp.ComparisonOutput, options cliOptions) error {
+func printDiffOutput(result schmp.ComparisonOutput, options cliOptions, stdout io.Writer) error {
 	m := result.Diff
-	if len(m) == 0 {
-		fmt.Println("No Diff, all files are exactly the same!")
-		return nil
-	}
-	output := toOutputFormat(m, options)
+	o := outputList{}
+	o.fromComparisonDiff(m, options)
 	if options.outType == "stdout" {
-		fmt.Printf("%d differences found:\n\n", len(output))
-		for _, v := range output {
-			v.printStdout()
-			fmt.Print("\n")
-		}
-		return nil
+		return o.printStdout(stdout)
 	}
 
 	if options.outType == "json" {
-		bytes, err := json.MarshalIndent(output, "", "  ")
-		if err != nil {
-			return err
-		}
-		err = ioutil.WriteFile(options.outFile, bytes, 0644)
-		return err
-
+		return o.writeJSON(stdout, options.outFile)
 	}
-	return nil
+	return fmt.Errorf("outType '%s' not supported", options.outType)
 }
