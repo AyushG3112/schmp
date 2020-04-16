@@ -1,5 +1,3 @@
-**THIS IS STILL A WORK IN PROGRESS**
-
 # schmp
 
 
@@ -46,7 +44,7 @@ $ go get -u github.com/AyushG3112/schmp
  - ~~Handle diff of nested objects~~
  - ~~Format CLI output~~
  - ~~Allow writing of cli output to file~~
- - Add tests
+ - ~~Add tests~~
  - ~~Add Documentation~~
  - Add examples
  
