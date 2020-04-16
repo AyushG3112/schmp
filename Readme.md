@@ -27,11 +27,20 @@ $ go install github.com/AyushG3112/schmp/cmd/schmp
 ### Usage
 
 ```
-$ schmp -f path/to/first/file -f path/to/second/file --out-type stdout --mode json
-  -f, --file stringArray   Files to compare. Use this flag multiple times, once for each file.
-  -m, --mode string        file format (default "json")
-  -o, --out-type string    Output format (default "stdout")
+$ schmp --help
+Usage of schmp:
+  -f, --file stringArray      Files to compare. Use this flag multiple times, once for each file.
+  -m, --mode string           input file format.  Allowed values: json, yaml, toml (default "json")
+      --out-file --out-type   Output file. Only used if --out-type is not stdout
+  -o, --out-type string       Output format. Allowed values: stdout, json (default "stdout")
 ```
+
+**Example**:
+
+```
+$ schmp -f path/to/first/file.json -f path/to/second/file.json --out-type stdout --mode json
+```
+
 
 ## Installing as a library
 
@@ -39,12 +48,27 @@ $ schmp -f path/to/first/file -f path/to/second/file --out-type stdout --mode js
 $ go get -u github.com/AyushG3112/schmp
 ```
 
-### TODO:
+**Usage Example**:
 
- - ~~Handle diff of nested objects~~
- - ~~Format CLI output~~
- - ~~Allow writing of cli output to file~~
- - ~~Add tests~~
- - ~~Add Documentation~~
- - Add examples
- 
+``` go
+import (
+  "github.com/AyushG3112/schmp"
+  "strings"
+  "fmt"
+)
+
+func main() {
+  reader1 := strings.NewReader(`{ "a": 1, "b": "2", "c": { "d": {"e" : 3}, "f": 4}}`)
+  reader2 := strings.NewReader(`{ "b": "5", "c": { "d": "6", "f": 7}, "g": null}`)
+  result, err := schmp.Compare(schmp.ProcessingOptions{
+    Mode: "json",
+    Sources: []io.Reader{
+      reader1,
+      reader2,
+    },
+  })
+  if err != nil {
+    panic(err)
+  }
+  fmt.Printlf("%+v", result)
+}
