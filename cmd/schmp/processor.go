@@ -3,7 +3,7 @@ package main
 import (
 	"io"
 
-	"github.com/AyushG3112/schmp"
+	"github.com/ayushg3112/schmp"
 )
 
 func process(options cliOptions) (schmp.ComparisonOutput, error) {

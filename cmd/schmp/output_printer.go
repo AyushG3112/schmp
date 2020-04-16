@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/AyushG3112/schmp"
+	"github.com/ayushg3112/schmp"
 )
 
 type typeData struct {

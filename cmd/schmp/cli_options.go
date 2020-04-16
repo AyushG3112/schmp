@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/AyushG3112/schmp"
+	"github.com/ayushg3112/schmp"
 )
 
 type cliOptions struct {

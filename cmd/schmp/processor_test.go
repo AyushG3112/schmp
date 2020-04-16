@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/AyushG3112/schmp"
+	"github.com/ayushg3112/schmp"
 )
 
 func TestProcessShouldReturnErrorWhenToProcessingOptionsFails(t *testing.T) {

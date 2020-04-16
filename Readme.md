@@ -20,7 +20,7 @@ The motivation to develop `schmp` arose as a requirement in our release process,
 ## Installing as CLI
 
 ``` console
-$ go install github.com/AyushG3112/schmp/cmd/schmp
+$ go install github.com/ayushg3112/schmp/cmd/schmp
 ```
 
 
@@ -45,14 +45,14 @@ $ schmp -f path/to/first/file.json -f path/to/second/file.json --out-type stdout
 ## Installing as a library
 
 ``` console
-$ go get -u github.com/AyushG3112/schmp
+$ go get -u github.com/ayushg3112/schmp
 ```
 
 **Usage Example**:
 
 ``` go
 import (
-  "github.com/AyushG3112/schmp"
+  "github.com/ayushg3112/schmp"
   "strings"
   "fmt"
 )

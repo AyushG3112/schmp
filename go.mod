@@ -1,4 +1,4 @@
-module github.com/AyushG3112/schmp
+module github.com/ayushg3112/schmp
 
 go 1.14
 
