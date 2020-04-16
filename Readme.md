@@ -20,6 +20,7 @@ The motivation to develop `schmp` arose as a requirement in our release process,
 ## Installing as CLI
 
 ``` console
+$ go get -u github.com/ayushg3112/schmp/cmd/schmp
 $ go install github.com/ayushg3112/schmp/cmd/schmp
 ```
 
