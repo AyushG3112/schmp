@@ -1,4 +1,5 @@
 # schmp
+[![GoDoc](https://godoc.org/github.com/ayushg3112/schmp?status.svg)](https://pkg.go.dev/github.com/ayushg3112/schmp)
 [![Build Status](https://travis-ci.org/AyushG3112/schmp.svg?branch=master)](https://travis-ci.org/AyushG3112/schmp)
 
 schmp is a schema comparision tool, which allows you to compare schemas of data in JSON, YAML and TOML format.
@@ -8,6 +9,7 @@ This only compares the types of your data members, and ignores the values.
 
 For objects or dictionaries, it traverses nested objects, as long as the type of that specific key is same in all the data samples provided.
 
+**NOTE:** This package is currently considered stable and no further changes are intended. I am only waiting on some feedback before a `v1.0.0` release.
 
 # Why? 
 
@@ -18,6 +20,13 @@ The motivation to develop `schmp` arose as a requirement in our release process,
 
 
 ## Installing as CLI
+
+If you are not using Go:
+ - Download the release from the [Releases](https://github.com/AyushG3112/schmp/releases) page and download the latest release archive for your OS and architecture.
+ - Extract the archive, and move the extracted file to your `PATH` (optional, use complete path to file if skipping this step)
+
+
+If you are using Go:
 
 ``` console
 $ go get -u github.com/ayushg3112/schmp/cmd/schmp
