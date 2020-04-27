@@ -14,11 +14,14 @@ script:
 - go build ./cmd/schmp/...
 - curl -sfL https://git.io/goreleaser | sh -s -- check
 
-deploy:
-- provider: script
-  skip_cleanup: true
-  script: curl -sL https://git.io/goreleaser | bash
-  on:
-    tags: true
-    condition: $TRAVIS_OS_NAME = linux
+jobs:
+  include:
+  - stage: deploy
+    go: 1.14.x
+    provider: script
+    skip_cleanup: true
+    script: curl -sL https://git.io/goreleaser | bash
+    on:
+      tags: true
+      condition: $TRAVIS_OS_NAME = linux
 
