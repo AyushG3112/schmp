@@ -1,5 +1,5 @@
 # schmp
-
+[![Build Status](https://travis-ci.org/AyushG3112/schmp.svg?branch=master)](https://travis-ci.org/AyushG3112/schmp)
 
 schmp is a schema comparision tool, which allows you to compare schemas of data in JSON, YAML and TOML format.
 It is available as both a CLI, or a library which can be imported in your project.
