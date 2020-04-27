@@ -19,10 +19,10 @@ jobs:
   include:
   - stage: deploy
     go: 1.14.x
-    script: curl -sL https://git.io/goreleaser | bash
     deploy:
     - provider: script
       cleanup: false
+      script: curl -sL https://git.io/goreleaser | bash
       on:
         tags: true
         condition: $TRAVIS_OS_NAME = linux
