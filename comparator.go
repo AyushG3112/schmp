@@ -1,7 +1,7 @@
 package schmp
 
 import (
-	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -24,7 +24,7 @@ func compare(maps []map[string]interface{}, options ProcessingOptions, parent st
 		for k, v := range m {
 			typeMapKey := k
 			if parent != "" {
-				typeMapKey = parent + "." + k
+				typeMapKey = fmt.Sprintf("%q.%q", parent, k)
 			}
 			nestedMapList := make([]map[string]interface{}, nmaps)
 			if seenKeys[k] {
@@ -37,8 +37,16 @@ func compare(maps []map[string]interface{}, options ProcessingOptions, parent st
 			if isObject {
 				if nm, ok := v.(map[string]interface{}); ok {
 					nestedMapList[i] = nm
+				} else if nm, ok := v.(map[interface{}]interface{}); ok {
+					stringConvertedMap := map[string]interface{}{}
+
+					for k, v := range nm {
+						stringConvertedMap[fmt.Sprintf("%v", k)] = v
+					}
+
+					nestedMapList[i] = stringConvertedMap
 				} else {
-					return nil, errors.New("unsupported type encountered during comparison")
+					return nil, fmt.Errorf("unsupported type encountered during comparison: %T, value: %v", v, v)
 				}
 			}
 			typeList := make([]string, nmaps)
