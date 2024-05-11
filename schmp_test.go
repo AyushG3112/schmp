@@ -45,7 +45,7 @@ func TestCompareJSON(t *testing.T) {
 			"map[string]interface {}",
 		},
 		"quiz.sport.q1.answer": {
-			"nil",
+			"<nil>",
 			"string",
 		},
 		"quiz.sport.q1.options": {
@@ -139,6 +139,10 @@ func TestCompareYAML(t *testing.T) {
 		t.Fatalf("failed to compare: %s", err.Error())
 	}
 	expected := map[string][]string{
+		"others.0": {
+			"string",
+			"int",
+		},
 		"quiz.arts": {
 			"map[string]interface {}",
 			"",
@@ -148,7 +152,7 @@ func TestCompareYAML(t *testing.T) {
 			"map[string]interface {}",
 		},
 		"quiz.sport.q1.answer": {
-			"nil",
+			"<nil>",
 			"string",
 		},
 		"quiz.sport.q1.options": {
@@ -165,7 +169,7 @@ func TestCompareYAML(t *testing.T) {
 		},
 	}
 	if !reflect.DeepEqual(expected, result.Diff) {
-		t.Fatalf("expected and actual did not match")
+		t.Fatalf("expected and actual did not match.\n\nexpected:\n%v\n\nactual:\n%v", expected, result.Diff)
 	}
 }
 

@@ -34,7 +34,7 @@ func TestGetOutputType(t *testing.T) {
 	})
 
 	t.Run("nil should return null", func(t *testing.T) {
-		failIfStringsNotEqual(getOutputType("nil"), "null", t)
+		failIfStringsNotEqual(getOutputType("<nil>"), "null", t)
 	})
 
 	t.Run("string should return string", func(t *testing.T) {
@@ -58,7 +58,7 @@ func TestToOutputFormat(t *testing.T) {
 			"map[string]interface {}",
 		},
 		"quiz.sport.q1.answer": {
-			"nil",
+			"<nil>",
 			"string",
 		},
 		"quiz.sport.q1.options": {
