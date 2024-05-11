@@ -89,7 +89,7 @@ func TestJSONCompareHasDiff(t *testing.T) {
 			"map[string]interface {}",
 		},
 		"quiz.sport.q1.answer": {
-			"nil",
+			"<nil>",
 			"string",
 		},
 		"quiz.sport.q1.options": {
@@ -105,7 +105,7 @@ func TestJSONCompareHasDiff(t *testing.T) {
 			"string",
 		},
 	}
-	actual, err := compare([]map[string]interface{}{m1, m2}, ProcessingOptions{}, "", make(map[string][]string))
+	actual, err := compare([]map[string]interface{}{m1, m2})
 	if err != nil {
 		t.Fatalf("failed to compare: %s", err.Error())
 	}
@@ -201,7 +201,7 @@ func TestJSONCompareNoDiff(t *testing.T) {
 	}
 
 	expected := map[string][]string{}
-	actual, err := compare([]map[string]interface{}{m1, m2}, ProcessingOptions{}, "", make(map[string][]string))
+	actual, err := compare([]map[string]interface{}{m1, m2})
 	if err != nil {
 		t.Fatalf("failed to compare: %s", err.Error())
 	}
@@ -250,7 +250,7 @@ func TestJSONCompareHasDiffWorksWithNilMaps(t *testing.T) {
 			"map[string]interface {}",
 		},
 	}
-	actual, err := compare([]map[string]interface{}{m1, m2}, ProcessingOptions{}, "", make(map[string][]string))
+	actual, err := compare([]map[string]interface{}{m1, m2})
 	if err != nil {
 		t.Fatalf("failed to compare: %s", err.Error())
 	}
@@ -266,7 +266,7 @@ func TestJSONCompareHasDiffWorksWithAllNilMaps(t *testing.T) {
 	var m3 map[string]interface{}
 
 	expected := map[string][]string{}
-	actual, err := compare([]map[string]interface{}{m1, m2, m3}, ProcessingOptions{}, "", make(map[string][]string))
+	actual, err := compare([]map[string]interface{}{m1, m2, m3})
 	if err != nil {
 		t.Fatalf("failed to compare: %s", err.Error())
 	}

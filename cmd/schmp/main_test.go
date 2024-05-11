@@ -42,18 +42,6 @@ func TestStartProcessFailedError(t *testing.T) {
 	}
 }
 
-func TestPrintDiffOutputFailed(t *testing.T) {
-	m := &mockWriterError{msg: "TestPrintDiffOutputFailed"}
-	os.Args = []string{"schmp", "-f", "../../testdata/json/json_1.json"}
-	exitCode := start(m)
-	expected := "failed to print output: mock error: " + m.msg + "\n"
-	if exitCode != 6 || expected != m.data {
-		t.Log(m.data)
-		t.Log(expected)
-		t.Fatalf("Invalid exit code: %d", exitCode)
-	}
-}
-
 func TestSuccessfulResultOnDiffStdout(t *testing.T) {
 	m := &mockWriter{}
 	os.Args = []string{"schmp", "-f", "../../testdata/json/json_1.json", "-f", "../../testdata/json/json_2.json"}

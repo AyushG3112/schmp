@@ -1,83 +1,119 @@
 package schmp
 
 import (
-	"errors"
+	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 )
 
+type typeMapValue struct {
+	typeName string
+	parents  []string
+}
+
 func getTypeString(v interface{}) string {
 	if v == nil {
-		return "nil"
+		return "<nil>"
 	}
 	return reflect.TypeOf(v).String()
 
 }
 
-func compare(maps []map[string]interface{}, options ProcessingOptions, parent string, typeMap map[string][]string) (map[string][]string, error) {
-	seenKeys := make(map[string]bool)
-	nmaps := len(maps)
-	for i, m := range maps {
-		if m == nil {
-			continue
+func buildTypeMap(m map[string]interface{}, parents []string, typeMap map[string]typeMapValue) error {
+	for k, v := range m {
+		typeMapKey := k
+		if len(parents) > 1 {
+			typeMapKey = parents[len(parents)-1] + "." + k
 		}
-		for k, v := range m {
-			typeMapKey := k
-			if parent != "" {
-				typeMapKey = parent + "." + k
-			}
-			nestedMapList := make([]map[string]interface{}, nmaps)
-			if seenKeys[k] {
-				continue
-			}
-			areAllSameTypes := true
-			seenKeys[k] = true
-			originalType := getTypeString(v)
-			isObject := strings.HasPrefix(originalType, "map[")
-			if isObject {
-				if nm, ok := v.(map[string]interface{}); ok {
-					nestedMapList[i] = nm
-				} else {
-					return nil, errors.New("unsupported type encountered during comparison")
-				}
-			}
-			typeList := make([]string, nmaps)
-			typeList[i] = originalType
-			for i2, m2 := range maps {
-				if i == i2 {
-					continue
-				}
-				currentType := ""
+		originalType := getTypeString(v)
+		isObject := strings.HasPrefix(originalType, "map[")
 
-				if m2 == nil {
-					typeList[i2] = currentType
-					areAllSameTypes = areAllSameTypes && currentType == originalType
-					continue
-				} else if v2, ok := m2[k]; ok {
-					currentType = getTypeString(v2)
-					areAllSameTypes = areAllSameTypes && currentType == originalType
-					if isObject {
-						if nm2, ok := v2.(map[string]interface{}); ok {
-							nestedMapList[i2] = nm2
-						} else {
-							nestedMapList[i2] = nil
-						}
-					}
-				} else {
-					if isObject {
-						nestedMapList[i2] = nil
-					}
-
-					areAllSameTypes = false
+		if isObject {
+			var nm map[string]interface{}
+			switch t := v.(type) {
+			case map[string]interface{}:
+				nm = t
+			case map[interface{}]interface{}:
+				nm = make(map[string]interface{})
+				for k, v := range t {
+					nm[fmt.Sprintf("%v", k)] = v
 				}
-				typeList[i2] = currentType
+			default:
+				return fmt.Errorf("unsupported type encountered at key %q: %T, value: %v", typeMapKey, v, v)
 			}
-			if !areAllSameTypes {
-				typeMap[typeMapKey] = typeList
-			} else if isObject {
-				typeMap, _ = compare(nestedMapList, options, typeMapKey, typeMap)
+
+			parents = append(parents, typeMapKey)
+			if err := buildTypeMap(nm, parents, typeMap); err != nil {
+				return err
 			}
+			parents = parents[:len(parents)-1] // Restore parents slice
+		}
+
+		typeMap[typeMapKey] = typeMapValue{
+			typeName: originalType,
+			parents:  append([]string(nil), parents...), // Copy parents slice
 		}
 	}
-	return typeMap, nil
+	return nil
+}
+
+func compare(maps []map[string]interface{}) (map[string][]string, error) {
+	diffMap := map[string][]string{}
+
+	typeMaps := make([]map[string]typeMapValue, 0, len(maps))
+	for i, v := range maps {
+		typeMaps = append(typeMaps, map[string]typeMapValue{})
+		buildTypeMap(v, []string{""}, typeMaps[i])
+	}
+
+	keySet := make(map[string]struct{})
+	for _, typeMap := range typeMaps {
+		for k := range typeMap {
+			keySet[k] = struct{}{}
+		}
+	}
+
+	keys := make([]string, 0, len(keySet))
+	for k := range keySet {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+DIFFLOOP:
+	for _, k := range keys {
+		vals := make([]typeMapValue, 0, len(typeMaps))
+
+		for _, typeMap := range typeMaps {
+			vals = append(vals, typeMap[k])
+		}
+
+		allSameType := true
+		baseType := vals[0].typeName
+
+		for i := 1; i < len(vals); i++ {
+			if vals[i].typeName != baseType {
+				allSameType = false
+				break
+			}
+		}
+
+		if allSameType {
+			continue
+		}
+
+		for i := 0; i < len(vals); i++ {
+			for _, parent := range vals[i].parents {
+				if _, ok := diffMap[parent]; ok {
+					continue DIFFLOOP
+				}
+			}
+		}
+
+		for i := 0; i < len(vals); i++ {
+			diffMap[k] = append(diffMap[k], vals[i].typeName)
+		}
+	}
+
+	return diffMap, nil
 }

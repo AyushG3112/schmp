@@ -49,7 +49,7 @@ func TestProcessShouldReturnCorrectDiffForJSON(t *testing.T) {
 				"map[string]interface {}",
 			},
 			"quiz.sport.q1.answer": {
-				"nil",
+				"<nil>",
 				"string",
 			},
 			"quiz.sport.q1.options": {
@@ -77,6 +77,10 @@ func TestProcessShouldReturnCorrectDiffForYAML(t *testing.T) {
 
 	expected := schmp.ComparisonOutput{
 		Diff: map[string][]string{
+			"others.0": {
+				"string",
+				"int",
+			},
 			"quiz.arts": {
 				"map[string]interface {}",
 				"",
@@ -94,7 +98,7 @@ func TestProcessShouldReturnCorrectDiffForYAML(t *testing.T) {
 				"map[string]interface {}",
 			},
 			"quiz.sport.q1.answer": {
-				"nil",
+				"<nil>",
 				"string",
 			},
 			"quiz.sport.q1.options": {
@@ -104,7 +108,7 @@ func TestProcessShouldReturnCorrectDiffForYAML(t *testing.T) {
 		},
 	}
 	if !reflect.DeepEqual(result, expected) {
-		t.Fail()
+		t.Fatalf("expected and actual did not match.\n\nexpected:\n%v\n\nactual:\n%v", expected, result.Diff)
 	}
 }
 

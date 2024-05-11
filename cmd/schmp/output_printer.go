@@ -110,7 +110,7 @@ func getOutputType(t string) string {
 	if strings.HasPrefix(t, "float") {
 		return "float"
 	}
-	if strings.HasPrefix(t, "nil") {
+	if strings.HasPrefix(t, "<nil>") {
 		return "null"
 	}
 	return t

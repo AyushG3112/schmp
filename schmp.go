@@ -1,6 +1,6 @@
 package schmp
 
-//Compare reads data from from the provided `options.Sources`, decodes them according to the provided `options.Mode`
+// Compare reads data from from the provided `options.Sources`, decodes them according to the provided `options.Mode`
 // and recursively compares properties of the decoded results.
 func Compare(options ProcessingOptions) (ComparisonOutput, error) {
 	parse, err := getParser(options.Mode)
@@ -11,6 +11,6 @@ func Compare(options ProcessingOptions) (ComparisonOutput, error) {
 	if err != nil {
 		return ComparisonOutput{}, err
 	}
-	diff, err := compare(sm, options, "", make(map[string][]string))
+	diff, err := compare(sm)
 	return ComparisonOutput{Diff: diff}, err
 }

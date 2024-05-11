@@ -183,6 +183,10 @@ func TestYAMLParser(t *testing.T) {
 
 	expected := []map[string]interface{}{
 		{
+			"others": map[interface{}]interface{}{
+				0: "A",
+				1: 1000,
+			},
 			"quiz": map[string]interface{}{
 				"arts": map[string]interface{}{
 					"question": nil,
@@ -224,6 +228,10 @@ func TestYAMLParser(t *testing.T) {
 			},
 		},
 		{
+			"others": map[interface{}]interface{}{
+				0: 100,
+				1: 1000,
+			},
 			"quiz": map[string]interface{}{
 				"science": map[string]interface{}{
 					"question": nil,
@@ -256,7 +264,7 @@ func TestYAMLParser(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expected, maps) {
-		t.Fatalf("expected and actual did not match")
+		t.Fatalf("expected and actual did not match.\n\nexpected:\n%v\n\nactual:\n%v", expected, maps)
 	}
 }
 
