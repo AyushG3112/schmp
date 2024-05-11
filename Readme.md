@@ -29,8 +29,7 @@ If you are not using Go:
 If you are using Go:
 
 ``` console
-$ go get -u github.com/ayushg3112/schmp/cmd/schmp
-$ go install github.com/ayushg3112/schmp/cmd/schmp
+$ go install github.com/ayushg3112/schmp/cmd/schmp@latest
 ```
 
 
