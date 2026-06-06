@@ -7,80 +7,56 @@ import (
 )
 
 func TestStartCLIFlagsValidationErrorsPrintFailed(t *testing.T) {
-	m := &mockWriterError{msg: "TestStartCLIFlagsValidationErrorsPrintFailed"}
+	stderr := &mockWriterError{msg: "TestStartCLIFlagsValidationErrorsPrintFailed"}
 	os.Args = []string{"schmp", "-o", "random"}
-	exitCode := start(m)
-	expected := "failed to print validation errors: mock error: " + m.msg + "\n"
-	if exitCode != 3 || expected != m.data {
-		t.Log(m.data)
+	exitCode := start(&mockWriter{}, stderr)
+	expected := "failed to print validation errors: mock error: " + stderr.msg + "\n"
+	if exitCode != 3 || expected != stderr.data {
+		t.Log(stderr.data)
 		t.Log(expected)
 		t.Fatalf("Invalid exit code: %d", exitCode)
 	}
 }
 
 func TestStartCLIFlagsValidationErrors(t *testing.T) {
-	m := &mockWriter{}
+	stderr := &mockWriter{}
 	os.Args = []string{"schmp", "-o", "random"}
-	exitCode := start(m)
+	exitCode := start(&mockWriter{}, stderr)
 	expected := "Could not process due to following errors: \n - out-type \"random\" is not allowed\n"
-	if exitCode != 4 || m.data != expected {
-		t.Log(m.data)
+	if exitCode != 4 || stderr.data != expected {
+		t.Log(stderr.data)
 		t.Log(expected)
 		t.Fatalf("Invalid exit code: %d", exitCode)
 	}
 }
 
 func TestStartProcessFailedError(t *testing.T) {
-	m := &mockWriter{}
+	stderr := &mockWriter{}
 	os.Args = []string{"schmp", "-m", "random"}
-	exitCode := start(m)
+	exitCode := start(&mockWriter{}, stderr)
 	expected := "could not process: mode \"random\" is not supported\n"
-	if exitCode != 5 || m.data != expected {
-		t.Log(m.data)
+	if exitCode != 5 || stderr.data != expected {
+		t.Log(stderr.data)
 		t.Log(expected)
 		t.Fatalf("Invalid exit code: %d", exitCode)
 	}
 }
 
 func TestSuccessfulResultOnDiffStdout(t *testing.T) {
-	m := &mockWriter{}
 	os.Args = []string{"schmp", "-f", "../../testdata/json/json_1.json", "-f", "../../testdata/json/json_2.json"}
-	exitCode := start(m)
+	exitCode := start(&mockWriter{}, &mockWriter{})
 	if exitCode != 7 {
 		t.Fatalf("Invalid exit code: %d", exitCode)
 	}
 }
 
 func TestSuccessfulResultOnNoDiffStdout(t *testing.T) {
-	m := &mockWriter{}
+	stdout := &mockWriter{}
 	os.Args = []string{"schmp", "-f", "../../testdata/json/json_1.json", "-f", "../../testdata/json/json_1.json"}
-	exitCode := start(m)
+	exitCode := start(stdout, &mockWriter{})
 	expected := "No Diff, all files are exactly the same!\n"
-	if exitCode != 0 || expected != m.data {
-		fmt.Println(m)
+	if exitCode != 0 || expected != stdout.data {
+		fmt.Println(stdout)
 		t.Fatalf("Invalid exit code: %d", exitCode)
 	}
 }
-
-// func start(stdout io.Writer) int {
-// 	options := parseCLIFlags()
-// 	validationErrors := options.validate()
-// 	printValidationErrors(validationErrors, stdout)
-// 	if len(validationErrors) != 0 {
-// 		return 3
-// 	}
-// 	m, err := process(options)
-// 	if err != nil {
-// 		fmt.Fprintf(stdout, "could not process: %s\n", err.Error())
-// 		return 4
-// 	}
-// 	err = printDiffOutput(m, options, stdout)
-// 	if err != nil {
-// 		fmt.Fprintf(stdout, "failed to print output: %s\n", err.Error())
-// 		return 5
-// 	}
-// 	if len(m.Diff) != 0 {
-// 		return 6
-// 	}
-// 	return 0
-// }

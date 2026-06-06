@@ -1,6 +1,6 @@
 # schmp
 [![GoDoc](https://godoc.org/github.com/ayushg3112/schmp?status.svg)](https://pkg.go.dev/github.com/ayushg3112/schmp)
-[![Build Status](https://travis-ci.org/AyushG3112/schmp.svg?branch=master)](https://travis-ci.org/AyushG3112/schmp)
+[![Master branch sanity](https://github.com/AyushG3112/schmp/actions/workflows/master-merge-checks.yml/badge.svg)](https://github.com/AyushG3112/schmp/actions/workflows/master-merge-checks.yml)
 
 schmp is a schema comparision tool, which allows you to compare schemas of data in JSON, YAML and TOML format.
 It is available as both a CLI, or a library which can be imported in your project.
@@ -9,7 +9,9 @@ This only compares the types of your data members, and ignores the values.
 
 For objects or dictionaries, it traverses nested objects, as long as the type of that specific key is same in all the data samples provided.
 
-**NOTE:** This package is currently considered stable and no further changes are intended. I am only waiting on some feedback before a `v1.0.0` release.
+Arrays are compared by the schema of their elements rather than their length: every element is folded onto a synthetic `<path>[]` key. So `[1, 2, 3]` and `[1]` match, while `["a"]` and `[1]` differ at `tags[]`. Objects inside arrays are traversed too (for example `users[].id`), and a mixed array such as `[1, "a"]` reports its element type as the set `int | string`.
+
+**NOTE:** This package is close to stable and is awaiting feedback before a `v1.0.0` release.
 
 # Why? 
 
@@ -40,14 +42,23 @@ $ schmp --help
 Usage of schmp:
   -f, --file stringArray      Files to compare. Use this flag multiple times, once for each file.
   -m, --mode string           input file format.  Allowed values: json, yaml, toml (default "json")
-      --out-file --out-type   Output file. Only used if --out-type is not stdout
+      --out-file --out-type   Output file for the json --out-type. If omitted, JSON is written to stdout.
   -o, --out-type string       Output format. Allowed values: stdout, json (default "stdout")
 ```
 
-**Example**:
+schmp exits with status `7` when schema differences are found and `0` when there are none, which makes it convenient as a release/CI gate.
+
+**Examples**:
 
 ```
+# human-readable diff to stdout
 $ schmp -f path/to/first/file.json -f path/to/second/file.json --out-type stdout --mode json
+
+# JSON diff to stdout
+$ schmp -f a.yaml -f b.yaml --mode yaml --out-type json
+
+# JSON diff to a file
+$ schmp -f a.toml -f b.toml --mode toml --out-type json --out-file diff.json
 ```
 
 
@@ -62,6 +73,7 @@ $ go get -u github.com/ayushg3112/schmp
 ``` go
 import (
   "github.com/ayushg3112/schmp"
+  "io"
   "strings"
   "fmt"
 )

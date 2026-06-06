@@ -1,119 +1,74 @@
 package schmp
 
-import (
-	"fmt"
-	"reflect"
-	"sort"
-	"strings"
-)
+import "sort"
 
-type typeMapValue struct {
-	typeName string
-	parents  []string
-}
-
-func getTypeString(v interface{}) string {
-	if v == nil {
-		return "<nil>"
-	}
-	return reflect.TypeOf(v).String()
-
-}
-
-func buildTypeMap(m map[string]interface{}, parents []string, typeMap map[string]typeMapValue) error {
-	for k, v := range m {
-		typeMapKey := k
-		if len(parents) > 1 {
-			typeMapKey = parents[len(parents)-1] + "." + k
-		}
-		originalType := getTypeString(v)
-		isObject := strings.HasPrefix(originalType, "map[")
-
-		if isObject {
-			var nm map[string]interface{}
-			switch t := v.(type) {
-			case map[string]interface{}:
-				nm = t
-			case map[interface{}]interface{}:
-				nm = make(map[string]interface{})
-				for k, v := range t {
-					nm[fmt.Sprintf("%v", k)] = v
-				}
-			default:
-				return fmt.Errorf("unsupported type encountered at key %q: %T, value: %v", typeMapKey, v, v)
-			}
-
-			parents = append(parents, typeMapKey)
-			if err := buildTypeMap(nm, parents, typeMap); err != nil {
-				return err
-			}
-			parents = parents[:len(parents)-1] // Restore parents slice
-		}
-
-		typeMap[typeMapKey] = typeMapValue{
-			typeName: originalType,
-			parents:  append([]string(nil), parents...), // Copy parents slice
-		}
-	}
-	return nil
-}
-
-func compare(maps []map[string]interface{}) (map[string][]string, error) {
-	diffMap := map[string][]string{}
-
-	typeMaps := make([]map[string]typeMapValue, 0, len(maps))
-	for i, v := range maps {
-		typeMaps = append(typeMaps, map[string]typeMapValue{})
-		buildTypeMap(v, []string{""}, typeMaps[i])
-	}
-
-	keySet := make(map[string]struct{})
-	for _, typeMap := range typeMaps {
-		for k := range typeMap {
-			keySet[k] = struct{}{}
+// compare flattens every document into a fileSchema and reports each dotted
+// path whose type is not identical across all of them. The result maps a path
+// to the type each document carries there, index-matched to docs; a document
+// that lacks the path contributes the empty string.
+//
+// When a path differs, its descendants are suppressed: a single "this whole
+// subtree changed type" entry is more useful than one diff per leaf beneath it.
+func compare(docs []map[string]interface{}) (map[string][]string, error) {
+	schemas := make([]fileSchema, len(docs))
+	for i, doc := range docs {
+		schemas[i] = fileSchema{}
+		if err := buildFileSchema(doc, schemas[i]); err != nil {
+			return nil, err
 		}
 	}
 
-	keys := make([]string, 0, len(keySet))
-	for k := range keySet {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-DIFFLOOP:
-	for _, k := range keys {
-		vals := make([]typeMapValue, 0, len(typeMaps))
-
-		for _, typeMap := range typeMaps {
-			vals = append(vals, typeMap[k])
-		}
-
-		allSameType := true
-		baseType := vals[0].typeName
-
-		for i := 1; i < len(vals); i++ {
-			if vals[i].typeName != baseType {
-				allSameType = false
-				break
+	diff := map[string][]string{}
+	for _, path := range sortedPaths(schemas) {
+		types := make([]string, len(schemas))
+		differs := false
+		for i, schema := range schemas {
+			types[i] = canonicalType(schema[path])
+			if types[i] != types[0] {
+				differs = true
 			}
 		}
-
-		if allSameType {
+		if !differs || hasDifferingAncestor(schemas, path, diff) {
 			continue
 		}
+		diff[path] = types
+	}
+	return diff, nil
+}
 
-		for i := 0; i < len(vals); i++ {
-			for _, parent := range vals[i].parents {
-				if _, ok := diffMap[parent]; ok {
-					continue DIFFLOOP
-				}
-			}
-		}
-
-		for i := 0; i < len(vals); i++ {
-			diffMap[k] = append(diffMap[k], vals[i].typeName)
+// sortedPaths returns the union of every path across all schemas, sorted. A
+// parent path is always a prefix of its descendants, so this ordering visits
+// every parent before its children — which is what lets compare suppress the
+// descendants of an already-recorded diff.
+func sortedPaths(schemas []fileSchema) []string {
+	seen := map[string]struct{}{}
+	for _, schema := range schemas {
+		for path := range schema {
+			seen[path] = struct{}{}
 		}
 	}
+	paths := make([]string, 0, len(seen))
+	for path := range seen {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	return paths
+}
 
-	return diffMap, nil
+// hasDifferingAncestor reports whether any container enclosing path has already
+// been recorded as a diff, in which case this path's difference is a
+// consequence of its parent's and should not be reported separately.
+func hasDifferingAncestor(schemas []fileSchema, path string, diff map[string][]string) bool {
+	for _, schema := range schemas {
+		info := schema[path]
+		if info == nil {
+			continue
+		}
+		for _, ancestor := range info.parents {
+			if _, ok := diff[ancestor]; ok {
+				return true
+			}
+		}
+	}
+	return false
 }

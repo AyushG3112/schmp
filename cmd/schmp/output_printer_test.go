@@ -1,7 +1,10 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/ayushg3112/schmp"
@@ -43,6 +46,15 @@ func TestGetOutputType(t *testing.T) {
 
 	t.Run("anything else should return itself", func(t *testing.T) {
 		failIfStringsNotEqual(getOutputType("random"), "random", t)
+	})
+
+	t.Run("empty string stays empty", func(t *testing.T) {
+		failIfStringsNotEqual(getOutputType(""), "", t)
+	})
+
+	t.Run("heterogeneous set maps each member", func(t *testing.T) {
+		failIfStringsNotEqual(getOutputType("int | string"), "integer | string", t)
+		failIfStringsNotEqual(getOutputType("<nil> | map[string]interface {}"), "null | object", t)
 	})
 }
 
@@ -317,8 +329,11 @@ func TestOutputListWriteJSONNoDiff(t *testing.T) {
 	opList := outputList{outputs: []outputFormat{}}
 
 	m := &mockWriter{}
-	opList.writeJSON(m, "")
-	expected := "No Diff, all files are exactly the same!\n"
+	if err := opList.writeJSON(m, ""); err != nil {
+		t.Fatal(err)
+	}
+	// An empty diff still produces a valid JSON document on stdout.
+	expected := "[]\n"
 	if expected != m.data {
 		t.Log(expected)
 		t.Log(m.data)
@@ -326,63 +341,95 @@ func TestOutputListWriteJSONNoDiff(t *testing.T) {
 	}
 }
 
-// func TestOutputListWriteJSONSomeDiff(t *testing.T) {
-// 	opList := outputList{
-// 		outputs: []outputFormat{
-// 			{
-// 				Field: "test.1",
-// 				Types: []typeData{
-// 					{
-// 						File: "a.json",
-// 						Type: "string",
-// 					},
-// 					{
-// 						File: "b.json",
-// 						Type: "integer",
-// 					},
-// 				},
-// 			},
-// 			{
-// 				Field: "test.2",
-// 				Types: []typeData{
-// 					{
-// 						File: "a.json",
-// 						Type: "",
-// 					},
-// 					{
-// 						File: "b.json",
-// 						Type: "object",
-// 					},
-// 				},
-// 			},
-// 			{
-// 				Field: "test.3",
-// 				Types: []typeData{
-// 					{
-// 						File: "a.json",
-// 						Type: "null",
-// 					},
-// 					{
-// 						File: "b.json",
-// 						Type: "",
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
+func TestOutputListWriteJSONToStdout(t *testing.T) {
+	opList := outputList{
+		outputs: []outputFormat{
+			{
+				Field: "test.1",
+				Types: []typeData{
+					{File: "a.json", Type: "string"},
+					{File: "b.json", Type: "integer"},
+				},
+			},
+		},
+	}
 
-// 	m := &mockWriter{}
-// 	err := opList.writeJSON(m, "")
-// 	expected := ""
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if expected != m.data {
-// 		t.Log(expected)
-// 		t.Log(m.data)
-// 		t.FailNow()
-// 	}
-// }
+	m := &mockWriter{}
+	if err := opList.writeJSON(m, ""); err != nil {
+		t.Fatal(err)
+	}
+	expected := `[
+  {
+    "Field": "test.1",
+    "Types": [
+      {
+        "File": "a.json",
+        "Type": "string"
+      },
+      {
+        "File": "b.json",
+        "Type": "integer"
+      }
+    ]
+  }
+]
+`
+	if expected != m.data {
+		t.Log(expected)
+		t.Log(m.data)
+		t.FailNow()
+	}
+}
+
+func TestOutputListWriteJSONToFile(t *testing.T) {
+	opList := outputList{
+		outputs: []outputFormat{
+			{
+				Field: "test.1",
+				Types: []typeData{
+					{File: "a.json", Type: "string"},
+					{File: "b.json", Type: "integer"},
+				},
+			},
+		},
+	}
+
+	outFile := filepath.Join(t.TempDir(), "out.json")
+	m := &mockWriter{}
+	if err := opList.writeJSON(m, outFile); err != nil {
+		t.Fatal(err)
+	}
+	// Nothing is written to stdout when an out-file is given.
+	if m.data != "" {
+		t.Fatalf("expected no stdout output, got: %q", m.data)
+	}
+	written, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("could not read out-file: %s", err.Error())
+	}
+	if !strings.Contains(string(written), `"Field": "test.1"`) {
+		t.Fatalf("out-file did not contain the diff: %s", string(written))
+	}
+}
+
+func TestOutputListWriteJSONToFileNoDiff(t *testing.T) {
+	opList := outputList{outputs: []outputFormat{}}
+
+	outFile := filepath.Join(t.TempDir(), "out.json")
+	m := &mockWriter{}
+	if err := opList.writeJSON(m, outFile); err != nil {
+		t.Fatal(err)
+	}
+	// The artifact is created even when there is no diff (FIX: previously the
+	// file was never written on a no-diff run).
+	written, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("could not read out-file: %s", err.Error())
+	}
+	if string(written) != "[]" {
+		t.Fatalf("expected empty JSON array, got: %s", string(written))
+	}
+}
 
 func TestPrintDiffOutputWithSomeDiff(t *testing.T) {
 	comparisonResult := schmp.ComparisonOutput{
