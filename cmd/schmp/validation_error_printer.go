@@ -5,14 +5,15 @@ import (
 	"io"
 )
 
-func printValidationErrors(valErrors []string, stdout io.Writer) error {
+func printValidationErrors(valErrors []string, w io.Writer) error {
 	if len(valErrors) == 0 {
 		return nil
 	}
-	fmt.Fprintln(stdout, "Could not process due to following errors: ")
+	if _, err := fmt.Fprintln(w, "Could not process due to following errors: "); err != nil {
+		return err
+	}
 	for _, v := range valErrors {
-		_, err := fmt.Fprintf(stdout, " - %s\n", v)
-		if err != nil {
+		if _, err := fmt.Fprintf(w, " - %s\n", v); err != nil {
 			return err
 		}
 	}

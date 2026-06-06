@@ -19,14 +19,14 @@ func TestCLIOptionsValidations(t *testing.T) {
 		}
 	})
 
-	t.Run("outType set no outfile", func(t *testing.T) {
+	t.Run("json outType without outfile is valid (writes json to stdout)", func(t *testing.T) {
 		options := cliOptions{
 			outType: "json",
 		}
-		expected := []string{"`out-file` is required if `out-type` is not stdout"}
+		expected := []string{}
 		validationErrors := options.validate()
 		if !reflect.DeepEqual(validationErrors, expected) {
-			t.Fatalf("expected error not found:\nExpected: %s\nActual: %s", validationErrors, expected)
+			t.Fatalf("expected no validation errors:\nExpected: %s\nActual: %s", expected, validationErrors)
 		}
 	})
 

@@ -3,7 +3,7 @@ package schmp
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"github.com/BurntSushi/toml"
 	"gopkg.in/yaml.v3"
@@ -28,7 +28,7 @@ func buildParserUsingUnmarshaller(unmarshal func([]byte, interface{}) error) fun
 	return func(options ProcessingOptions) ([]map[string]interface{}, error) {
 		results := make([]map[string]interface{}, len(options.Sources))
 		for i, v := range options.Sources {
-			b, err := ioutil.ReadAll(v)
+			b, err := io.ReadAll(v)
 			if err != nil {
 				return nil, err
 			}

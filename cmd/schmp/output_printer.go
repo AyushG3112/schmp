@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 
@@ -63,19 +63,19 @@ func (o *outputList) printStdout(stdout io.Writer) error {
 	return nil
 }
 
+// writeJSON renders the diff as indented JSON. With an out-file it is written
+// there (always, even for an empty "[]" diff, so the artifact a pipeline expects
+// always exists); without one it goes to stdout.
 func (o *outputList) writeJSON(stdout io.Writer, outFile string) error {
-	if len(o.outputs) == 0 {
-		_, err := fmt.Fprintln(stdout, "No Diff, all files are exactly the same!")
-		if err != nil {
-			return err
-		}
-		return nil
-	}
 	bytes, err := json.MarshalIndent(o.outputs, "", "  ")
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(outFile, bytes, 0644)
+	if outFile == "" {
+		_, err := fmt.Fprintf(stdout, "%s\n", bytes)
+		return err
+	}
+	return os.WriteFile(outFile, bytes, 0644)
 }
 
 func (o *outputList) fromComparisonDiff(diff map[string][]string, options cliOptions) {
@@ -97,23 +97,35 @@ func (o *outputList) fromComparisonDiff(diff map[string][]string, options cliOpt
 	o.outputs = op
 }
 
+// getOutputType maps the Go type names produced by the comparator to friendly
+// names (object, array, integer, float, null). A heterogeneous array surfaces
+// as a " | "-joined set of type names, so each member is mapped individually.
 func getOutputType(t string) string {
-	if strings.HasPrefix(t, "map") {
+	if t == "" {
+		return ""
+	}
+	parts := strings.Split(t, " | ")
+	for i, part := range parts {
+		parts[i] = friendlyTypeName(part)
+	}
+	return strings.Join(parts, " | ")
+}
+
+func friendlyTypeName(t string) string {
+	switch {
+	case strings.HasPrefix(t, "map"):
 		return "object"
-	}
-	if strings.HasPrefix(t, "[]") {
+	case strings.HasPrefix(t, "[]"):
 		return "array"
-	}
-	if strings.HasPrefix(t, "int") {
+	case strings.HasPrefix(t, "int"), strings.HasPrefix(t, "uint"):
 		return "integer"
-	}
-	if strings.HasPrefix(t, "float") {
+	case strings.HasPrefix(t, "float"):
 		return "float"
-	}
-	if strings.HasPrefix(t, "<nil>") {
+	case t == "<nil>":
 		return "null"
+	default:
+		return t
 	}
-	return t
 }
 
 func printDiffOutput(result schmp.ComparisonOutput, options cliOptions, stdout io.Writer) error {
